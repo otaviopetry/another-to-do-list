@@ -36,6 +36,8 @@ const thirdInstruction = new Task ({
     due: 'today'
 })
 
+const defaultInstructions = [firstInstruction, secondInstruction, thirdInstruction];
+
 // starts the todo list array, which will be reseted everytime the root route is called
 let todoListArray = [];
 
@@ -51,7 +53,7 @@ app.get( "/", async function (req, res) {
             // if there is no tasks in db, create the instruction tasks
             if ( tasks.length === 0 ) {
                 Task.insertMany(
-                    [firstInstruction, secondInstruction, thirdInstruction],
+                    defaultInstructions,
                     (err) => {
                         err ? console.warn(err)
                         :
@@ -112,6 +114,51 @@ app.post( '/delete', function (req, res) {
 
 })
 
+// custom lists
+
+const customListSchema = new mongoose.Schema({
+    name: String,
+    taskList: [taskSchema]
+})
+
+const CustomList = new mongoose.model( 'List', customListSchema);
+
+const workToDoList = [];
+
+app.get( '/:customListName', function (req, res) {
+    
+    // store the name given
+    const listName = req.params.customListName;
+
+    CustomList.findOne(
+        { name: listName },
+        (err, results) => {
+            if (err) { console.warn(err) }
+            else {
+                if ( results === null ) {
+                    const list = new CustomList ({
+                        name: listName,
+                        taskList: defaultInstructions
+                    })
+                
+                    list.save();
+                    res.redirect(`/${listName}`);
+                } else {
+                    res.render( "todolist", {
+                        theTitle: "To Do List - " + listName,
+                        theDate: date.getDate(),
+                        todoList: results.taskList
+                    })                    
+                }
+            }
+        }
+    )
+
+
+    /* */
+
+})
+
 app.get("/work", function (req, res) {
     
     res.render( "todolist", {
@@ -134,6 +181,8 @@ app.post("/work", function (req, res) {
 app.get("/about", function (req, res) {
     res.render("about");
 })
+
+
 
 const desiredPort = 7777;
 app.listen(desiredPort, function () {
