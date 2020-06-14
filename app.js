@@ -19,66 +19,79 @@ const taskSchema = new mongoose.Schema({
 
 const Task = new mongoose.model( 'Task', taskSchema );
 
-/* const lunch = new Task ({
-    task: 'Almoçar',
-    due: '14:30'
+
+// instruction tasks
+const firstInstruction = new Task ({
+    task: 'Liste suas tarefas',
+    due: 'com uma data de finalização'
 })
 
-const study = new Task ({
-    task: 'Seguir este módulo',
-    due: '17:00'
+const secondInstruction = new Task ({
+    task: 'Use os campos abaixo para adicionar uma tarefa',
+    due: 'today'
 })
 
-const draw = new Task ({
-    task: 'Desenhar um pouquito',
-    due: '16:00'
+const thirdInstruction = new Task ({
+    task: 'E este botão aqui para excluir',
+    due: 'today'
 })
- */
-/* Task.insertMany(
-    [lunch, study, draw],
-    (err) => {
-        err ? console.warn(err)
-        :
-            console.log("Sucessfully saved the tasks.")
-    }
-) */
 
 // starts the todo list array, which will be reseted everytime the root route is called
 let todoListArray = [];
 
-
-// async function so the todo list array is not reseted at the wrong time
+// async function because we need to wait the db check
 app.get( "/", async function (req, res) {
 
+    // resets the array to render it after
     todoListArray = [];
     
     await Task.find( {}, (err, tasks) => {
-        err ? console.log(err)
-        :
-            tasks.forEach( (task) => {
-                todoListArray.push(task);
-            })
+        if (err) { console.log(err) }
+        else {
+            
+            // if there is no tasks in db, create the instruction tasks
+            if ( tasks.length === 0 ) {
+                Task.insertMany(
+                    [firstInstruction, secondInstruction, thirdInstruction],
+                    (err) => {
+                        err ? console.warn(err)
+                        :
+                            console.log("Sucessfully saved the tasks.")
+                    }
+                )
 
-            res.render( "todolist", {
-                theTitle: "To Do List",
-                theDate: date.getDate(),
-                todoList: todoListArray                
-            })            
+                // reload the route to fall on the else block and render the tasks
+                res.redirect('/');
+            
+            // when we have information in db
+            } else {                
+                tasks.forEach( (task) => {
+                    todoListArray.push(task);
+                })
+
+                res.render( "todolist", {
+                    theTitle: "To Do List",
+                    theDate: date.getDate(),
+                    todoList: todoListArray                
+                })
+            }
+        }          
     });   
 
 })
 
 app.post( "/", function (req, res) {
 
+    // get the posted info into the Task model
     let newItem = new Task ({
         task: req.body.newTask,
         due: req.body.taskDue
     });
 
-    console.log(newItem);
-
+    // save it to mongodb
     newItem.save();
 
+    // refresh to render the updated array
     res.redirect("/");
 
 })
