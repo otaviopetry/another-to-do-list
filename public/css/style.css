@@ -1,0 +1,112 @@
+.OP-toDoList {
+  margin: 0;
+  background: #fdfdfd;
+  font-family: monospace;
+  background: linear-gradient(35deg, #A683E3 50%, #f0f0f0 50%);
+}
+.OP-toDoList .container {
+  margin-top: 5rem;
+  min-height: calc(100vh - 50px - 4rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  margin-top: 4rem;
+}
+.OP-toDoList .container .row {
+  width: 100%;
+}
+.OP-toDoList .container .row.main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 2rem;
+}
+.OP-toDoList h1 {
+  background-color: #623F9F;
+  color: #fff;
+  border-radius: 5px;
+  display: inline-block;
+  padding: 5px 10px;
+}
+.OP-toDoList h1 + p {
+  margin-top: -0.5rem;
+  font-size: 1.2rem;
+}
+.OP-toDoList .toDoList {
+  display: block;
+  min-width: 400px;
+  max-width: 500px;
+  margin: 0 auto 2rem;
+  text-align: left;
+  background-color: #fbfbfb;
+  border-radius: 5px;
+  border: 1px solid #999;
+  padding: 1rem;
+}
+.OP-toDoList .toDoList .list-item {
+  margin-bottom: 10px;
+}
+.OP-toDoList .toDoList .list-item span.due {
+  font-size: 0.65rem;
+  font-style: italic;
+}
+.OP-toDoList .toDoList input[type=checkbox] {
+  vertical-align: middle;
+}
+.OP-toDoList .toDoList input[type=checkbox]:checked + p {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+.OP-toDoList .toDoList p {
+  display: inline-block;
+  margin: 0;
+  vertical-align: middle;
+}
+.OP-toDoList form {
+  width: 400px;
+  margin: 0 auto;
+  text-align: left;
+}
+.OP-toDoList form label {
+  background-color: #d5d5d5;
+  color: #515151;
+  padding: 5px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+  display: inline-block;
+}
+.OP-toDoList form input {
+  display: inline-block;
+  width: calc(100% - 50px);
+  height: 2rem;
+  color: #555;
+  border-radius: 5px;
+  border: 1px solid #999;
+  padding: 5px 10px;
+  box-sizing: border-box;
+}
+.OP-toDoList button[type=submit] {
+  border-radius: 100%;
+  font-size: 1rem;
+  font-weight: bold;
+  width: 40px;
+  height: 40px;
+  vertical-align: middle;
+  text-align: center;
+  color: #fff;
+  background-color: #A683E3;
+  border: 3px dashed #fff;
+}
+
+footer {
+  height: 50px;
+  text-align: center;
+  color: #fff;
+}
+
+/*# sourceMappingURL=style.css.map */
