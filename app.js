@@ -43,12 +43,11 @@ let todoListArray = [];
 app.get( "/", async function (req, res) {
 
     // resets the array to render it after
-    todoListArray = [];
+    todoListArray = [];    
     
     await Task.find( {}, (err, tasks) => {
         if (err) { console.log(err) }
-        else {
-            
+        else {            
             // if there is no tasks in db, create the instruction tasks
             if ( tasks.length === 0 ) {
                 Task.insertMany(
@@ -93,6 +92,23 @@ app.post( "/", function (req, res) {
 
     // refresh to render the updated array
     res.redirect("/");
+
+})
+
+app.post( '/delete', function (req, res) {
+    
+    const taskId = req.body.checkbox;
+
+    Task.deleteOne(
+        { _id: taskId },
+        (err) => {
+            err ? console.warn(err)
+            :
+                console.log('Sucessfully deleted task from the list. Well done!')
+        }
+    )
+
+    res.redirect('/');
 
 })
 
