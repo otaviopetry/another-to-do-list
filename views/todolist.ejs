@@ -13,6 +13,7 @@
                             <div class="list-item">
                                 <input type="checkbox" class="doneCheck" name="checkbox" value="<%= task._id %>" onChange="this.form.submit()">
                                 <p>
+                                    <input type="hidden" name="deleteFrom" value="<%= theTitle %>">
                                     <%= task.task %>
                                     <span class="due"><%= task.due %></span>
                                 </p>
@@ -21,11 +22,11 @@
                     <% }) %>
                 </div>
     
-                <form method="post">
+                <form action="/" method="post">
                     <label for="newTask">Nova tarefa</label><br>
                     <input name="newTask" type="text" id="newTask" autofocus>
                     <input name="taskDue" type="text">
-                    <button type="submit">+</button>
+                    <button type="submit" name="listName" value="<%= theTitle %>">+</button>
                 </form>
             </div>
         </div>

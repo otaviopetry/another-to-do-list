@@ -19,7 +19,6 @@ const taskSchema = new mongoose.Schema({
 
 const Task = new mongoose.model( 'Task', taskSchema );
 
-
 // instruction tasks
 const firstInstruction = new Task ({
     task: 'Liste suas tarefas',
@@ -38,8 +37,20 @@ const thirdInstruction = new Task ({
 
 const defaultInstructions = [firstInstruction, secondInstruction, thirdInstruction];
 
+const homeListName = "To do list";
+
 // starts the todo list array, which will be reseted everytime the root route is called
 let todoListArray = [];
+
+// custom lists
+const customListSchema = new mongoose.Schema({
+    name: String,
+    taskList: [taskSchema]
+})
+
+const CustomList = new mongoose.model( 'List', customListSchema);
+
+const workToDoList = [];
 
 // async function because we need to wait the db check
 app.get( "/", async function (req, res) {
@@ -71,7 +82,7 @@ app.get( "/", async function (req, res) {
                 })
 
                 res.render( "todolist", {
-                    theTitle: "To Do List",
+                    theTitle: homeListName,
                     theDate: date.getDate(),
                     todoList: todoListArray                
                 })
@@ -84,46 +95,90 @@ app.get( "/", async function (req, res) {
 app.post( "/", function (req, res) {
 
     // get the posted info into the Task model
-    let newItem = new Task ({
+    const newItem = new Task ({
         task: req.body.newTask,
         due: req.body.taskDue
     });
 
-    // save it to mongodb
-    newItem.save();
+    // get the list name
+    const listName = req.body.listName;
 
-    // refresh to render the updated array
-    res.redirect("/");
+    if ( listName === homeListName ) {
 
+        // save it to mongodb
+        newItem.save();
+
+        // refresh to render the updated array
+        res.redirect("/");
+
+    } else {
+
+        // search the list and save the task to it
+        CustomList.findOne( { name: listName }, (err, foundList) => {
+            err
+            ? console.warn(err)
+            : 
+                foundList.taskList.push(newItem);
+                foundList.save();
+        })
+        res.redirect(`/${listName}`);
+    }
 })
 
 app.post( '/delete', function (req, res) {
-    
+
+    // store the task id coming from checkbox value
     const taskId = req.body.checkbox;
 
-    Task.deleteOne(
-        { _id: taskId },
-        (err) => {
-            err ? console.warn(err)
-            :
-                console.log('Sucessfully deleted task from the list. Well done!')
-        }
-    )
+    // store the list name coming from hidden input in delete form
+    const listName = req.body.deleteFrom;
 
-    res.redirect('/');
+    // main logic - check if is the main task list or some custom list and handle the request
+    if ( listName === homeListName ) {
 
+        Task.deleteOne(
+            { _id: taskId },
+            (err) => {
+                err ? console.warn(err)
+                :
+                    console.log('Sucessfully deleted task from the list. Well done!')
+            }
+        )
+        res.redirect('/');
+
+    } else {
+        
+        // find the custom list in db
+        CustomList.findOne( { name: listName }, (err, foundList) => {
+            if ( err ) {
+                console.warn(err);
+            } else {
+
+                // store the found list child object taskList
+                const theCustomList = foundList.taskList;
+
+                // set default index
+                let taskIndex = 0;
+
+                // find task position in taskList array
+                for ( var i = 0; i < theCustomList.length; i++ ) {                    
+                    const task = theCustomList[i];
+                    console.log(task._id)
+                    if ( task._id === taskId ) {
+                        taskIndex = i;
+                    }
+                }
+
+                // remove the task from array
+                theCustomList.splice(taskIndex, 1);
+
+                // complete operation
+                foundList.save();                
+            }
+        })
+        res.redirect(`/${listName}`);          
+    } 
 })
-
-// custom lists
-
-const customListSchema = new mongoose.Schema({
-    name: String,
-    taskList: [taskSchema]
-})
-
-const CustomList = new mongoose.model( 'List', customListSchema);
-
-const workToDoList = [];
 
 app.get( '/:customListName', function (req, res) {
     
@@ -145,7 +200,7 @@ app.get( '/:customListName', function (req, res) {
                     res.redirect(`/${listName}`);
                 } else {
                     res.render( "todolist", {
-                        theTitle: "To Do List - " + listName,
+                        theTitle: listName,
                         theDate: date.getDate(),
                         todoList: results.taskList
                     })                    
@@ -153,10 +208,7 @@ app.get( '/:customListName', function (req, res) {
             }
         }
     )
-
-
     /* */
-
 })
 
 app.get("/work", function (req, res) {
@@ -181,7 +233,6 @@ app.post("/work", function (req, res) {
 app.get("/about", function (req, res) {
     res.render("about");
 })
-
 
 
 const desiredPort = 7777;
