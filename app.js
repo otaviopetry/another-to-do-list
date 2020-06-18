@@ -10,7 +10,8 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://localhost:27017/todolistDB", { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect("mongodb://localhost:27017/todolistDB", { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
+
 
 const taskSchema = new mongoose.Schema({
     task: String,
@@ -148,35 +149,23 @@ app.post( '/delete', function (req, res) {
 
     } else {
         
-        // find the custom list in db
-        CustomList.findOne( { name: listName }, (err, foundList) => {
-            if ( err ) {
-                console.warn(err);
-            } else {
+        // refactored using the learnt $pull method from mongoose
+        CustomList.findOneAndUpdate(
+            
+            // find the list in the collection
+            {name: listName},
+            
+            // set the update query
+            {$pull: { taskList: { _id: taskId }}},
 
-                // store the found list child object taskList
-                const theCustomList = foundList.taskList;
-
-                // set default index
-                let taskIndex = 0;
-
-                // find task position in taskList array
-                for ( var i = 0; i < theCustomList.length; i++ ) {                    
-                    const task = theCustomList[i];
-                    console.log(task._id)
-                    if ( task._id === taskId ) {
-                        taskIndex = i;
-                    }
-                }
-
-                // remove the task from array
-                theCustomList.splice(taskIndex, 1);
-
-                // complete operation
-                foundList.save();                
+            // callback
+            (err, foundList) => {
+                !err
+                ? res.redirect(`/${listName}`)
+                : console.warn(err)
             }
-        })
-        res.redirect(`/${listName}`);          
+        )
+        
     } 
 })
 
