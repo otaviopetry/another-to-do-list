@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const date = require(__dirname + "/date.js");
+const _ = require('lodash');
 
 const app = express();
 
@@ -172,21 +173,28 @@ app.post( '/delete', function (req, res) {
 app.get( '/:customListName', function (req, res) {
     
     // store the name given
-    const listName = req.params.customListName;
+    const listName = _.capitalize(req.params.customListName);
 
     CustomList.findOne(
+
+        // find the list
         { name: listName },
+
+        //callback
         (err, results) => {
             if (err) { console.warn(err) }
             else {
+
+                // if the list does not exist yet, create it
                 if ( results === null ) {
                     const list = new CustomList ({
                         name: listName,
                         taskList: defaultInstructions
-                    })
-                
+                    })                
                     list.save();
                     res.redirect(`/${listName}`);
+                
+                // if it does, render it
                 } else {
                     res.render( "todolist", {
                         theTitle: listName,
@@ -197,32 +205,7 @@ app.get( '/:customListName', function (req, res) {
             }
         }
     )
-    /* */
 })
-
-app.get("/work", function (req, res) {
-    
-    res.render( "todolist", {
-        theTitle: "To Do List - Work",
-        theDate: date.getDate(),
-        toDoList: workToDoList
-    })
-
-})
-
-app.post("/work", function (req, res) {
-
-    let newItem = req.body.newToDo;
-    workToDoList.push(newItem);
-
-    res.redirect("/work");
-
-})
-
-app.get("/about", function (req, res) {
-    res.render("about");
-})
-
 
 const desiredPort = 7777;
 app.listen(desiredPort, function () {
